@@ -16,6 +16,7 @@ CREATE TABLE books (
                        book_id INT AUTO_INCREMENT PRIMARY KEY,
                        title VARCHAR(255) NOT NULL,
                        isbn VARCHAR(20) NOT NULL,
+                       publication_year INT(4) NULL DEFAULT NULL,
                        genre_id INT,
                        FOREIGN KEY (genre_id) REFERENCES genres(genre_id)
 );
