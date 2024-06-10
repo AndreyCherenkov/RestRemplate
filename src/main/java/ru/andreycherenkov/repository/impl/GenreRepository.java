@@ -38,8 +38,8 @@ public class GenreRepository implements GenreCRUDRepository {
         }
         try(Connection connection = connectionManager.getConnection()) {
             String sql = "SELECT g.genre_id, g.name, b.book_id " +
-                    "FROM Genres g " +
-                    "JOIN Books b ON g.genre_id = b.genre_id " +
+                    "FROM genres g " +
+                    "JOIN books b ON g.genre_id = b.genre_id " +
                     "WHERE g.genre_id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, id);
@@ -49,7 +49,7 @@ public class GenreRepository implements GenreCRUDRepository {
             //Обработка случая, когда нет книг с данным жанром
             if (genre == null) {
                 genre = new Genre();
-                sql = "SELECT * FROM Genres WHERE genre_id = ?";
+                sql = "SELECT * FROM genres WHERE genre_id = ?";
                 preparedStatement = connection.prepareStatement(sql);
                 preparedStatement.setLong(1, id);
                 resultSet = preparedStatement.executeQuery();
@@ -81,7 +81,7 @@ public class GenreRepository implements GenreCRUDRepository {
                 bookRepository.save(book);
             }
 
-            sql = "DELETE FROM Genres WHERE genre_id = ?";
+            sql = "DELETE FROM genres WHERE genre_id = ?";
             preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, id);
             int rowsAffected = preparedStatement.executeUpdate();
