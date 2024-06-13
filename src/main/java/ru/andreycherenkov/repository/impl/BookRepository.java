@@ -5,13 +5,14 @@ import ru.andreycherenkov.db.impl.ContainerConnectionManager;
 import ru.andreycherenkov.db.impl.MySQLConnectionManager;
 import ru.andreycherenkov.model.Author;
 import ru.andreycherenkov.model.Book;
+import ru.andreycherenkov.model.Genre;
 import ru.andreycherenkov.repository.BookCRUDRepository;
 import ru.andreycherenkov.repository.mapper.BookMapper;
 import ru.andreycherenkov.repository.mapper.BookResultMapper;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BookRepository implements BookCRUDRepository {
 
@@ -102,41 +103,60 @@ public class BookRepository implements BookCRUDRepository {
 
     @Override
     public List<Book> findAll() {
-        try (Connection connection = connectionManager.getConnection()){
-
+        try (Connection connection = connectionManager.getConnection()) {
             String sql = "SELECT b.book_id, b.title, b.isbn, b.publication_year, " +
                     "g.genre_id, g.name, " +
                     "a.author_id, a.first_name, a.last_name " +
                     "FROM books b " +
-                    "JOIN genres g ON b.genre_id = g.genre_id " +
-                    "JOIN author_book ba ON b.book_id = ba.book_id " +
-                    "JOIN authors a ON ba.author_id = a.author_id ";
+                    "LEFT JOIN genres g ON b.genre_id = g.genre_id " +
+                    "LEFT JOIN author_book ba ON b.book_id = ba.book_id " +
+                    "LEFT JOIN authors a ON ba.author_id = a.author_id ";
+
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
-            List<Book> books = new ArrayList<>();
-            while (resultSet.next()) {
-                books.add(bookResultMapper.map(resultSet));
-            }
 
-            //Поиск книг без жанров и репозиториев
-            sql = "SELECT * FROM books";
-            preparedStatement = connection.prepareStatement(sql);
-            resultSet = preparedStatement.executeQuery();
-            Book book;
+            List<Book> books = new ArrayList<>();
+            Map<Long, Book> bookMap = new HashMap<>();
+
             while (resultSet.next()) {
-                book = new Book();
-                book.setId(resultSet.getLong("book_id"));
+                long bookId = resultSet.getLong("book_id");
+                Book book = bookMap.getOrDefault(bookId, new Book());
+
+                book.setId(bookId);
                 book.setTitle(resultSet.getString("title"));
                 book.setIsbn(resultSet.getString("isbn"));
                 book.setPublicationYear(resultSet.getInt("publication_year"));
-                books.add(book);
+
+                // Обработка жанра
+                long genreId = resultSet.getLong("genre_id");
+                if (genreId != 0) {
+                    Genre genre = new Genre();
+                    genre.setId(genreId);
+                    genre.setName(resultSet.getString("name"));
+                    book.setGenre(genre);
+                }
+
+                // Обработка авторов
+                long authorId = resultSet.getLong("author_id");
+                if (authorId != 0) {
+                    Author author = new Author();
+                    author.setId(authorId);
+                    author.setFirstName(resultSet.getString("first_name"));
+                    author.setLastName(resultSet.getString("last_name"));
+                    book.addAuthor(author);
+                }
+
+                bookMap.put(bookId, book);
             }
+
+            books.addAll(bookMap.values());
             preparedStatement.close();
             return books;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     @Override
     public Book save(Book book) {

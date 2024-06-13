@@ -11,7 +11,9 @@ import ru.andreycherenkov.repository.mapper.AuthorResultSetMapper;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AuthorRepository implements AuthorCRUDRepository {
 
@@ -96,20 +98,51 @@ public class AuthorRepository implements AuthorCRUDRepository {
     @Override
     public List<Author> findAll() {
         try (Connection connection = connectionManager.getConnection()) {
-            String sql = "SELECT *" +
-                        "FROM authors";
+            String sql = "SELECT DISTINCT a.author_id, a.first_name, a.last_name, b.book_id, b.title, b.isbn, b.publication_year " +
+                    "FROM authors a " +
+                    "JOIN author_book ab ON a.author_id = ab.author_id " +
+                    "JOIN books b ON ab.book_id = b.book_id";
+
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
+
             List<Author> authors = new ArrayList<>();
+            Map<Long, Author> authorMap = new HashMap<>();
+
             while (resultSet.next()) {
-                authors.add(authorResultSetMapper.map(resultSet));
+                long authorId = resultSet.getLong("author_id");
+                Author author = authorMap.getOrDefault(authorId, new Author());
+
+                author.setId(authorId);
+                author.setFirstName(resultSet.getString("first_name"));
+                author.setLastName(resultSet.getString("last_name"));
+
+                // Добавление информации о книге
+                long bookId = resultSet.getLong("book_id");
+                String title = resultSet.getString("title");
+                String isbn = resultSet.getString("isbn");
+                int publicationYear = resultSet.getInt("publication_year");
+
+                Book book = new Book();
+                book.setId(bookId);
+                book.setTitle(title);
+                book.setIsbn(isbn);
+                book.setPublicationYear(publicationYear);
+
+                author.addBook(book);
+
+                authorMap.put(authorId, author);
             }
+
+            authors.addAll(authorMap.values());
             preparedStatement.close();
             return authors;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
+
 
     @Override
     public Author save(Author author) {

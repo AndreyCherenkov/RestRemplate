@@ -10,8 +10,7 @@ import ru.andreycherenkov.repository.mapper.GenreMapper;
 import ru.andreycherenkov.repository.mapper.GenreResultSetMapper;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class GenreRepository implements GenreCRUDRepository {
 
@@ -96,22 +95,39 @@ public class GenreRepository implements GenreCRUDRepository {
     @Override
     public List<Genre> findAll() {
         try (Connection connection = connectionManager.getConnection()) {
-            String sql = "SELECT * FROM genres";
+            String sql = "SELECT g.genre_id, g.name, b.book_id " +
+                    "FROM genres g " +
+                    "LEFT JOIN books b ON g.genre_id = b.genre_id";
+
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
+
             List<Genre> genres = new ArrayList<>();
-            Genre genre;
+            Map<Long, Genre> genreMap = new HashMap<>();
+
             while (resultSet.next()) {
-                genre = new Genre();
-                genre.setId(resultSet.getLong("genre_id"));
+                long genreId = resultSet.getLong("genre_id");
+                Genre genre = genreMap.getOrDefault(genreId, new Genre());
+                genre.setId(genreId);
                 genre.setName(resultSet.getString("name"));
-                genres.add(genre);
+
+                long bookId = resultSet.getLong("book_id");
+                if (bookId != 0) {
+                    Book book = new Book();
+                    book.setId(bookId);
+                    genre.addBook(book);
+                }
+
+                genreMap.put(genreId, genre);
             }
+
+            genres.addAll(genreMap.values());
             return genres;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     @Override
     public Genre save(Genre genre) {
