@@ -1,4 +1,4 @@
-package ru.andreycherenkov;
+package ru.andreycherenkov.repository;
 
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.MySQLContainer;

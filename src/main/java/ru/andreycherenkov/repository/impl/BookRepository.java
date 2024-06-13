@@ -103,12 +103,33 @@ public class BookRepository implements BookCRUDRepository {
     @Override
     public List<Book> findAll() {
         try (Connection connection = connectionManager.getConnection()){
-            String sql = "SELECT * FROM books";
+
+            String sql = "SELECT b.book_id, b.title, b.isbn, b.publication_year, " +
+                    "g.genre_id, g.name, " +
+                    "a.author_id, a.first_name, a.last_name " +
+                    "FROM books b " +
+                    "JOIN genres g ON b.genre_id = g.genre_id " +
+                    "JOIN author_book ba ON b.book_id = ba.book_id " +
+                    "JOIN authors a ON ba.author_id = a.author_id ";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<Book> books = new ArrayList<>();
             while (resultSet.next()) {
                 books.add(bookResultMapper.map(resultSet));
+            }
+
+            //Поиск книг без жанров и репозиториев
+            sql = "SELECT * FROM books";
+            preparedStatement = connection.prepareStatement(sql);
+            resultSet = preparedStatement.executeQuery();
+            Book book;
+            while (resultSet.next()) {
+                book = new Book();
+                book.setId(resultSet.getLong("book_id"));
+                book.setTitle(resultSet.getString("title"));
+                book.setIsbn(resultSet.getString("isbn"));
+                book.setPublicationYear(resultSet.getInt("publication_year"));
+                books.add(book);
             }
             preparedStatement.close();
             return books;
