@@ -73,7 +73,7 @@ public class Book {
         this.authors.add(author);
     }
 
-    public List<Author> getAuthor() {
+    public List<Author> getAuthors() {
         return authors;
     }
 

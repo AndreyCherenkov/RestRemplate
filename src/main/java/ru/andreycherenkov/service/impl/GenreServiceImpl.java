@@ -8,7 +8,12 @@ import java.util.List;
 
 public class GenreServiceImpl implements GenreService {
 
-    private final GenreRepository genreRepository = new GenreRepository();
+    private final GenreRepository genreRepository;
+
+    public GenreServiceImpl(GenreRepository genreRepository) {
+        this.genreRepository = genreRepository;
+    }
+
     @Override
     public Genre save(Genre genre) {
         return genreRepository.save(genre);

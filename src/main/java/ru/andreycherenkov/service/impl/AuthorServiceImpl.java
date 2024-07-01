@@ -5,10 +5,16 @@ import ru.andreycherenkov.repository.impl.AuthorRepository;
 import ru.andreycherenkov.service.AuthorService;
 
 import java.util.List;
+import java.util.Optional;
 
 public class AuthorServiceImpl implements AuthorService {
 
-    private final AuthorRepository authorRepository = new AuthorRepository();
+    private final AuthorRepository authorRepository;
+
+    public AuthorServiceImpl(AuthorRepository authorRepository) {
+        this.authorRepository = authorRepository;
+    }
+
     @Override
     public Author save(Author author) {
         return authorRepository.save(author);
@@ -21,11 +27,11 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public boolean deleteById(Long id) {
-        return false;
+        return authorRepository.deleteById(id);
     }
 
     @Override
     public List<Author> findAll() {
-        return null;
+        return authorRepository.findAll();
     }
 }

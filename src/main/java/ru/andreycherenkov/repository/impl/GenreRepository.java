@@ -5,14 +5,14 @@ import ru.andreycherenkov.db.impl.ContainerConnectionManager;
 import ru.andreycherenkov.db.impl.MySQLConnectionManager;
 import ru.andreycherenkov.model.Book;
 import ru.andreycherenkov.model.Genre;
-import ru.andreycherenkov.repository.GenreCRUDRepository;
+import ru.andreycherenkov.repository.CRUDRepository;
 import ru.andreycherenkov.repository.mapper.GenreMapper;
 import ru.andreycherenkov.repository.mapper.GenreResultSetMapper;
 
 import java.sql.*;
 import java.util.*;
 
-public class GenreRepository implements GenreCRUDRepository {
+public class GenreRepository implements CRUDRepository<Genre, Long> {
 
     private final ConnectionManager connectionManager;
     private final GenreResultSetMapper genreResultSetMapper;
@@ -33,7 +33,10 @@ public class GenreRepository implements GenreCRUDRepository {
     @Override
     public Genre findById(Long id) {
         if (id == null || id <= 0) {
-            return null;
+            Genre genre = new Genre();
+            genre.setId(null);
+            genre.setName(null);
+            return genre;
         }
         try(Connection connection = connectionManager.getConnection()) {
             String sql = "SELECT g.genre_id, g.name, b.book_id " +
@@ -132,7 +135,7 @@ public class GenreRepository implements GenreCRUDRepository {
     @Override
     public Genre save(Genre genre) {
         try (Connection connection = connectionManager.getConnection()) {
-            if (findById(genre.getId()) == null) {
+            if (findById(genre.getId()).getId() == null) {
                 Long id = createGenre(genre);
                 genre.setId(id);
             } else {

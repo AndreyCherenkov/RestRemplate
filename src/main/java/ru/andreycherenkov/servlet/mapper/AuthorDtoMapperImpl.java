@@ -1,10 +1,7 @@
 package ru.andreycherenkov.servlet.mapper;
 
 import ru.andreycherenkov.model.Author;
-import ru.andreycherenkov.repository.BookCRUDRepository;
-import ru.andreycherenkov.repository.impl.BookRepository;
 import ru.andreycherenkov.service.BookService;
-import ru.andreycherenkov.service.impl.BookServiceImpl;
 import ru.andreycherenkov.servlet.dto.IncomingAuthorDto;
 import ru.andreycherenkov.servlet.dto.OutgoingAuthorDto;
 
@@ -12,7 +9,11 @@ import java.util.stream.Collectors;
 
 public class AuthorDtoMapperImpl implements AuthorDtoMapper{
 
-    private final BookService bookService = new BookServiceImpl();
+    private final BookService bookService;
+
+    public AuthorDtoMapperImpl(BookService bookService) {
+        this.bookService = bookService;
+    }
 
     @Override
     public Author map(IncomingAuthorDto incomingAuthorDto) {

@@ -24,7 +24,7 @@ public class Genre {
     }
 
     public void setName(String name) {
-        this.name = name.toLowerCase();
+        this.name = name;
     }
 
     public List<Book> getBooks() {

@@ -6,15 +6,14 @@ import ru.andreycherenkov.db.impl.MySQLConnectionManager;
 import ru.andreycherenkov.model.Author;
 import ru.andreycherenkov.model.Book;
 import ru.andreycherenkov.model.Genre;
-import ru.andreycherenkov.repository.BookCRUDRepository;
+import ru.andreycherenkov.repository.CRUDRepository;
 import ru.andreycherenkov.repository.mapper.BookMapper;
 import ru.andreycherenkov.repository.mapper.BookResultMapper;
 
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class BookRepository implements BookCRUDRepository {
+public class BookRepository implements CRUDRepository<Book, Long> {
 
     private ConnectionManager connectionManager;
     private BookResultMapper bookResultMapper;
@@ -40,8 +39,13 @@ public class BookRepository implements BookCRUDRepository {
 
     @Override
     public Book findById(Long id) {
-        if (id == null) {
-            return null;
+        if (id == null || id <= 0) {
+            Book book = new Book();
+            book.setId(null);
+            book.setAuthor(null);
+            book.setTitle(null);
+            book.setIsbn(null);
+            return book;
         }
         try (Connection connection = connectionManager.getConnection()){
             String sql = "SELECT b.book_id, b.title, b.isbn, b.publication_year, " +
@@ -162,7 +166,7 @@ public class BookRepository implements BookCRUDRepository {
     public Book save(Book book) {
         try (Connection connection = connectionManager.getConnection()) {
             connection.setAutoCommit(false);
-            if (findById(book.getId()) == null) {
+            if (findById(book.getId()).getId() == null) {
                 createBook(book);
             } else {
                 updateBook(book);
@@ -189,10 +193,10 @@ public class BookRepository implements BookCRUDRepository {
                 book.setId(generatedKeys.getLong(1));
             }
 
-            if (!book.getAuthor().isEmpty()) {
+            if (!book.getAuthors().isEmpty()) {
                 sql = "INSERT INTO author_book (book_id, author_id) VALUES (?, ?)";
                 preparedStatement = connection.prepareStatement(sql);
-                for (Author author : book.getAuthor()) {
+                for (Author author : book.getAuthors()) {
                     preparedStatement.setLong(1, book.getId());
                     preparedStatement.setLong(2, author.getId());
                     preparedStatement.executeUpdate();

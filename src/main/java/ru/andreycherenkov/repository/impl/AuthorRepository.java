@@ -5,7 +5,7 @@ import ru.andreycherenkov.db.impl.ContainerConnectionManager;
 import ru.andreycherenkov.db.impl.MySQLConnectionManager;
 import ru.andreycherenkov.model.Author;
 import ru.andreycherenkov.model.Book;
-import ru.andreycherenkov.repository.AuthorCRUDRepository;
+import ru.andreycherenkov.repository.CRUDRepository;
 import ru.andreycherenkov.repository.mapper.AuthorMapper;
 import ru.andreycherenkov.repository.mapper.AuthorResultSetMapper;
 
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AuthorRepository implements AuthorCRUDRepository {
+public class AuthorRepository implements CRUDRepository<Author, Long> {
 
     private ConnectionManager connectionManager;
     private AuthorResultSetMapper authorResultSetMapper;
@@ -38,8 +38,12 @@ public class AuthorRepository implements AuthorCRUDRepository {
                     "WHERE a.author_id = ?";*/
     @Override
     public Author findById(Long id) {
-        if (id == null) {
-            return null;
+        if (id == null || id <= 0) {
+            Author author = new Author();
+            author.setId(null);
+            author.setFirstName(null);
+            author.setLastName(null);
+            return author;
         }
         try(Connection connection = connectionManager.getConnection()) {
             String sql = "SELECT a.author_id, a.first_name, a.last_name, " +
@@ -82,7 +86,7 @@ public class AuthorRepository implements AuthorCRUDRepository {
             deleteAuthorBookStatement.setLong(1, id);
             deleteAuthorBookStatement.executeUpdate();
 
-            String deleteAuthorSql = "DELETE FROM authors WHERE id = ?";
+            String deleteAuthorSql = "DELETE FROM authors WHERE author_id = ?";
             PreparedStatement deleteAuthorStatement = connection.prepareStatement(deleteAuthorSql);
             deleteAuthorStatement.setLong(1, id);
             int rowsAffected = deleteAuthorStatement.executeUpdate();
@@ -98,10 +102,11 @@ public class AuthorRepository implements AuthorCRUDRepository {
     @Override
     public List<Author> findAll() {
         try (Connection connection = connectionManager.getConnection()) {
+            // Используем LEFT JOIN, чтобы получить всех авторов, даже если у них нет книг
             String sql = "SELECT DISTINCT a.author_id, a.first_name, a.last_name, b.book_id, b.title, b.isbn, b.publication_year " +
                     "FROM authors a " +
-                    "JOIN author_book ab ON a.author_id = ab.author_id " +
-                    "JOIN books b ON ab.book_id = b.book_id";
+                    "LEFT JOIN author_book ab ON a.author_id = ab.author_id " +
+                    "LEFT JOIN books b ON ab.book_id = b.book_id";
 
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -117,19 +122,22 @@ public class AuthorRepository implements AuthorCRUDRepository {
                 author.setFirstName(resultSet.getString("first_name"));
                 author.setLastName(resultSet.getString("last_name"));
 
-                // Добавление информации о книге
-                long bookId = resultSet.getLong("book_id");
-                String title = resultSet.getString("title");
-                String isbn = resultSet.getString("isbn");
-                int publicationYear = resultSet.getInt("publication_year");
+                // Проверяем, есть ли у автора книги
+                if (resultSet.getObject("book_id") != null) {
+                    // Добавление информации о книге
+                    long bookId = resultSet.getLong("book_id");
+                    String title = resultSet.getString("title");
+                    String isbn = resultSet.getString("isbn");
+                    int publicationYear = resultSet.getInt("publication_year");
 
-                Book book = new Book();
-                book.setId(bookId);
-                book.setTitle(title);
-                book.setIsbn(isbn);
-                book.setPublicationYear(publicationYear);
+                    Book book = new Book();
+                    book.setId(bookId);
+                    book.setTitle(title);
+                    book.setIsbn(isbn);
+                    book.setPublicationYear(publicationYear);
 
-                author.addBook(book);
+                    author.addBook(book);
+                }
 
                 authorMap.put(authorId, author);
             }
@@ -148,7 +156,7 @@ public class AuthorRepository implements AuthorCRUDRepository {
     public Author save(Author author) {
         try (Connection connection = connectionManager.getConnection()) {
             connection.setAutoCommit(false);
-            if (findById(author.getId()) == null) {
+            if (findById(author.getId()).getId() == null) {
                 createAuthor(author);
             } else {
                 updateAuthor(author);
@@ -190,10 +198,11 @@ public class AuthorRepository implements AuthorCRUDRepository {
 
     private void updateAuthor(Author author) {
         try (Connection connection = connectionManager.getConnection()){
-            String sql = "UPDATE author SET first_name = ?, last_name = ? WHERE author_id = ?";
+            String sql = "UPDATE authors SET first_name = ?, last_name = ? WHERE author_id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, author.getFirstName());
             preparedStatement.setString(2, author.getLastName());
+            preparedStatement.setLong(3, author.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);

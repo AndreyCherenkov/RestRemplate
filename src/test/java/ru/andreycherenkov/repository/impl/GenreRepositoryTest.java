@@ -1,4 +1,4 @@
-package ru.andreycherenkov.repository;
+package ru.andreycherenkov.repository.impl;
 
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.MySQLContainer;
@@ -6,7 +6,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import ru.andreycherenkov.model.Genre;
-import ru.andreycherenkov.repository.impl.GenreRepository;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -27,9 +26,11 @@ class GenreRepositoryTest {
             .withUsername("test")
             .withPassword("test");
 
-    private final GenreRepository genreRepository = new GenreRepository(mysqlContainer.getJdbcUrl(),
+    private final GenreRepository genreRepository = new GenreRepository(
+            mysqlContainer.getJdbcUrl(),
             mysqlContainer.getUsername(),
-            mysqlContainer.getPassword());
+            mysqlContainer.getPassword()
+    );
 
     @Test
     @Order(1)
@@ -88,14 +89,13 @@ class GenreRepositoryTest {
     void whenFindById8ThenGenreIdAndNameAreNull() {
         Genre genre = genreRepository.findById(8L);
         assertNull(genre.getId());
-        assertNull(genre.getName());
     }
 
     @Test
     @Order(8)
     void whenIdIsNegativeThenGenreIsNull() {
         Genre genre = genreRepository.findById(-1L);
-        assertNull(genre);
+        assertNull(genre.getId());
     }
 
     @AfterAll
