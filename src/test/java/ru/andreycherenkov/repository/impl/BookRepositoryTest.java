@@ -5,7 +5,6 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import ru.andreycherenkov.model.Author;
 import ru.andreycherenkov.model.Book;
 
 import java.sql.Connection;
@@ -15,6 +14,7 @@ import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+
 @Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BookRepositoryTest {
@@ -22,7 +22,7 @@ public class BookRepositoryTest {
     @Container
     public static final MySQLContainer<?> mysqlContainer = new MySQLContainer<>(DockerImageName.parse("mysql:8.0.36"))
             .withDatabaseName("test")
-            .withInitScript("db-migration.sql")
+            .withInitScript("db-migration.sql") //ошибка тут
             .withUsername("test")
             .withPassword("test");
 
