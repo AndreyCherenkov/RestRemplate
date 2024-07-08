@@ -14,7 +14,6 @@ class BookMapperTest {
 
     @Test
     void testMap() throws SQLException {
-        // Подготавливаем тестовые данные
         Book expectedBook = new Book();
         expectedBook.setId(1L);
         expectedBook.setTitle("Test Title");
@@ -35,7 +34,6 @@ class BookMapperTest {
         author2.setLastName("Doe");
         expectedBook.addAuthor(author2);
 
-        // Создаем мок ResultSet
         ResultSet resultSet = mock(ResultSet.class);
         when(resultSet.next()).thenReturn(true, true, false); // Два автора + false для выхода из цикла
         when(resultSet.getLong("book_id")).thenReturn(1L);
@@ -49,13 +47,9 @@ class BookMapperTest {
         when(resultSet.getString("first_name")).thenReturn("John", "Jane");
         when(resultSet.getString("last_name")).thenReturn("Doe", "Doe");
 
-        // Создаем экземпляр BookMapper
         BookMapper bookMapper = new BookMapper();
-
-        // Вызываем метод map()
         Book actualBook = bookMapper.map(resultSet);
 
-        // Проверяем результат
         assertNotNull(actualBook);
         assertEquals(expectedBook.getId(), actualBook.getId());
         assertEquals(expectedBook.getTitle(), actualBook.getTitle());
@@ -74,17 +68,13 @@ class BookMapperTest {
 
     @Test
     void testMapWhenResultSetIsEmpty() throws SQLException {
-        // Создаем мок ResultSet, который вернет false при вызове next()
         ResultSet resultSet = mock(ResultSet.class);
         when(resultSet.next()).thenReturn(false);
 
-        // Создаем экземпляр BookMapper
         BookMapper bookMapper = new BookMapper();
 
-        // Вызываем метод map()
         Book book = bookMapper.map(resultSet);
 
-        // Проверяем, что результат равен null
         assertNull(book);
     }
 }

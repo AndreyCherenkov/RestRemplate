@@ -5,7 +5,11 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import ru.andreycherenkov.db.ConnectionManager;
+import ru.andreycherenkov.db.impl.ContainerConnectionManager;
 import ru.andreycherenkov.model.Author;
+import ru.andreycherenkov.repository.mapper.AuthorMapper;
+import ru.andreycherenkov.repository.mapper.AuthorResultSetMapper;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -25,11 +29,15 @@ public class AuthorRepositoryTest {
             .withUsername("test")
             .withPassword("test");
 
-    private final AuthorRepository authorRepository = new AuthorRepository(
+    private final ConnectionManager connectionManager = new ContainerConnectionManager(
             mysqlContainer.getJdbcUrl(),
             mysqlContainer.getUsername(),
             mysqlContainer.getPassword()
     );
+
+    private final AuthorResultSetMapper authorResultSetMapper = new AuthorMapper();
+
+    private final AuthorRepository authorRepository = new AuthorRepository(connectionManager, authorResultSetMapper);
 
     @Test
     @Order(1)
@@ -43,7 +51,9 @@ public class AuthorRepositoryTest {
         Author author = new Author();
         author.setFirstName("Bob");
         author.setLastName("Bab");
+
         authorRepository.save(author);
+
         assertEquals(6, authorRepository.findAll().size());
     }
 
@@ -53,7 +63,8 @@ public class AuthorRepositoryTest {
         Author author = new Author();
         author.setFirstName("TestFirstName");
         author.setLastName("TestLastName");
-        Author savedAuthor = authorRepository.save(author);
+        authorRepository.save(author);
+
         assertEquals(7, authorRepository.findAll().size());
         assertEquals("TestFirstName", author.getFirstName());
         assertEquals("TestLastName", author.getLastName());
@@ -63,6 +74,7 @@ public class AuthorRepositoryTest {
     @Order(4)
     void findAuthorById1() {
         Author author = authorRepository.findById(1L);
+
         assertEquals("Джордж", author.getFirstName());
         assertEquals("Мартин", author.getLastName());
     }
@@ -71,6 +83,7 @@ public class AuthorRepositoryTest {
     @Order(5)
     void afterDeleteFindAllReturn6Authors() {
         boolean bool = authorRepository.deleteById(1L);
+
         assertTrue(bool);
         assertEquals(6, authorRepository.findAll().size());
     }
@@ -83,6 +96,7 @@ public class AuthorRepositoryTest {
         author.setLastName("ChangeLastName");
         authorRepository.save(author);
         author = authorRepository.findById(2L);
+
         assertEquals(2L, author.getId());
         assertEquals("ChangeFirstName", author.getFirstName());
         assertEquals("ChangeLastName", author.getLastName());

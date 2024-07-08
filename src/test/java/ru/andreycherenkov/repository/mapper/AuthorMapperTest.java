@@ -14,7 +14,6 @@ class AuthorMapperTest {
 
     @Test
     void testMap() throws SQLException {
-        // Подготовка тестовых данных
         Author expectedAuthor = new Author();
         expectedAuthor.setId(1L);
         expectedAuthor.setFirstName("John");
@@ -34,7 +33,6 @@ class AuthorMapperTest {
         book2.setPublicationYear(2023);
         expectedAuthor.addBook(book2);
 
-        // Создание мок-объекта ResultSet
         ResultSet resultSet = mock(ResultSet.class);
         when(resultSet.next()).thenReturn(true, true, false); // Два автора + false для выхода из цикла
         when(resultSet.getLong("author_id")).thenReturn(1L);
@@ -46,13 +44,10 @@ class AuthorMapperTest {
         when(resultSet.getString("isbn")).thenReturn("1234567890", "0987654321");
         when(resultSet.getInt("publication_year")).thenReturn(2022, 2023);
 
-        // Создание экземпляра AuthorMapper
         AuthorMapper authorMapper = new AuthorMapper();
 
-        // Вызов метода map()
         Author actualAuthor = authorMapper.map(resultSet);
 
-        // Проверка результата
         assertNotNull(actualAuthor);
         assertEquals(expectedAuthor.getId(), actualAuthor.getId());
         assertEquals(expectedAuthor.getFirstName(), actualAuthor.getFirstName());
@@ -69,17 +64,13 @@ class AuthorMapperTest {
 
     @Test
     void testMapWhenResultSetIsEmpty() throws SQLException {
-        // Создание мок-объекта ResultSet, который вернет false при вызове next()
         ResultSet resultSet = mock(ResultSet.class);
         when(resultSet.next()).thenReturn(false);
 
-        // Создание экземпляра AuthorMapper
         AuthorMapper authorMapper = new AuthorMapper();
 
-        // Вызов метода map()
         Author author = authorMapper.map(resultSet);
 
-        // Проверка, что результат равен null
         assertNull(author);
     }
 }

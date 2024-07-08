@@ -13,22 +13,26 @@ import java.util.Properties;
 
 public class MySQLConnectionManager implements ConnectionManager {
 
-    Properties properties = new Properties();
+    private static final String DEFAULT_RESOURCE_PATH = "src/main/resources/db.properties";
+    private static final String DB_URL = "db.mysql.url";
+    private static final String DB_USER = "db.username";
+    private static final String DB_PASSWORD = "db.password";
+
+    private final Properties properties = new Properties();
+
     public MySQLConnectionManager() {
-        try (FileInputStream fileInputStream = new FileInputStream("src/main/resources/db.properties")) {
+        try (FileInputStream fileInputStream = new FileInputStream(DEFAULT_RESOURCE_PATH)) {
             properties.load(fileInputStream);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при чтении файла свойств", e);
         }
     }
 
-
-
     @Override
     public Connection getConnection() throws SQLException {
-        String url = properties.getProperty("db.mysql.url");
-        String username = properties.getProperty("db.username");
-        String password = properties.getProperty("db.password");
+        String url = properties.getProperty(DB_URL);
+        String username = properties.getProperty(DB_USER);
+        String password = properties.getProperty(DB_PASSWORD);
         return DriverManager.getConnection(url, username, password);
     }
 }

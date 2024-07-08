@@ -17,20 +17,16 @@ class GenreDtoMapperImplTest {
 
     @Test
     void testMapIncomingGenreDto() {
-        // given
         IncomingGenreDto incomingGenreDto = new IncomingGenreDto("Test Genre");
 
-        // when
         Genre genre = genreDtoMapper.map(incomingGenreDto);
 
-        // then
         assertNotNull(genre);
         assertEquals("Test Genre", genre.getName());
     }
 
     @Test
     void testMapGenre() {
-        // given
         Book book1 = new Book();
         book1.setId(1L);
         Book book2 = new Book();
@@ -44,10 +40,8 @@ class GenreDtoMapperImplTest {
 
         List<Long> expectedBookIds = Arrays.asList(1L, 2L);
 
-        // when
         OutgoingGenreDto outgoingGenreDto = genreDtoMapper.map(genre);
 
-        // then
         assertNotNull(outgoingGenreDto);
         assertEquals(1L, outgoingGenreDto.id());
         assertEquals("Test Genre", outgoingGenreDto.name());

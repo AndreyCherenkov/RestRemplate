@@ -47,10 +47,8 @@ class AuthorDtoMapperImplTest {
         when(bookService.findById(1L)).thenReturn(book1);
         when(bookService.findById(2L)).thenReturn(book2);
 
-        // When
         Author author = authorDtoMapper.map(incomingAuthorDto);
 
-        // Then
         assertEquals("John", author.getFirstName());
         assertEquals("Doe", author.getLastName());
         assertEquals(List.of(book1, book2), author.getBooks());
@@ -58,7 +56,6 @@ class AuthorDtoMapperImplTest {
 
     @Test
     void testMapAuthor() {
-        // Given
         Book book1 = new Book();
         book1.setId(1L);
         book1.setTitle("Book 1");
@@ -76,10 +73,8 @@ class AuthorDtoMapperImplTest {
         author.setLastName("Doe");
         author.setBooks(List.of(book1, book2));
 
-        // When
         OutgoingAuthorDto outgoingAuthorDto = authorDtoMapper.map(author);
 
-        // Then
         assertEquals(1L, outgoingAuthorDto.id());
         assertEquals("John", outgoingAuthorDto.firstName());
         assertEquals("Doe", outgoingAuthorDto.lastName());

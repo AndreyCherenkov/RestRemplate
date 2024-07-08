@@ -77,11 +77,14 @@ class AuthorServletTest {
         String firstname = "testName";
         String lastname = "testLastName";
         String jsonRequest = "{\"firstName\":\"" + firstname + "\"" + ",\"lastName\":\"" + lastname + "\"" + ",\"bookIds\":[1,2,3]}";
+
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
+
         authorServlet.doPost(request, response);
         ArgumentCaptor<Author> argumentCaptor = ArgumentCaptor.forClass(Author.class);
         verify(authorService).save(argumentCaptor.capture());
+
         assertEquals(firstname, argumentCaptor.getValue().getFirstName());
         assertEquals(lastname, argumentCaptor.getValue().getLastName());
         assertEquals(3, argumentCaptor.getValue().getBooks().size());
@@ -90,7 +93,9 @@ class AuthorServletTest {
     @Test
     void doDelete() throws IOException, ServletException {
         when(request.getParameter("id")).thenReturn("1");
+
         authorServlet.doDelete(request, response);
+
         verify(authorService).deleteById(Mockito.anyLong());
         verify(response).setStatus(HttpServletResponse.SC_OK);
     }
@@ -98,7 +103,9 @@ class AuthorServletTest {
     @Test
         void doDeleteInternalServerError() throws IOException, ServletException {
         when(request.getParameter("id")).thenReturn("error");
+
         authorServlet.doDelete(request, response);
+
         verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
@@ -107,11 +114,14 @@ class AuthorServletTest {
         String firstname = "testName";
         String lastname = "testLastName";
         String jsonRequest = "{\"firstName\":\"" + firstname + "\"" + ",\"lastName\":\"" + lastname + "\"" + ",\"bookIds\":[1,2,3]}";
+
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
         authorServlet.doPut(request, response);
+
         ArgumentCaptor<Author> argumentCaptor = ArgumentCaptor.forClass(Author.class);
         verify(authorService).save(argumentCaptor.capture());
+
         assertEquals(firstname, argumentCaptor.getValue().getFirstName());
         assertEquals(lastname, argumentCaptor.getValue().getLastName());
         assertEquals(3, argumentCaptor.getValue().getBooks().size());

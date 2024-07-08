@@ -58,7 +58,7 @@ public class Book {
     }
 
     public Long getGenreId() {
-        return this.genre.getId();
+        return genre.getId();
     }
 
     public void setGenreId(Long id) {

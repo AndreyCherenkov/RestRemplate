@@ -5,7 +5,11 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import ru.andreycherenkov.db.ConnectionManager;
+import ru.andreycherenkov.db.impl.ContainerConnectionManager;
 import ru.andreycherenkov.model.Book;
+import ru.andreycherenkov.repository.mapper.BookMapper;
+import ru.andreycherenkov.repository.mapper.BookResultMapper;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,14 +26,21 @@ public class BookRepositoryTest {
     @Container
     public static final MySQLContainer<?> mysqlContainer = new MySQLContainer<>(DockerImageName.parse("mysql:8.0.36"))
             .withDatabaseName("test")
-            .withInitScript("db-migration.sql") //ошибка тут
+            .withInitScript("db-migration.sql")
             .withUsername("test")
             .withPassword("test");
 
-    private final BookRepository bookRepository = new BookRepository(
+    private final ConnectionManager connectionManager = new ContainerConnectionManager(
             mysqlContainer.getJdbcUrl(),
             mysqlContainer.getUsername(),
             mysqlContainer.getPassword()
+    );
+
+    private BookResultMapper bookResultMapper = new BookMapper();
+
+    private final BookRepository bookRepository = new BookRepository(
+            connectionManager,
+            bookResultMapper
     );
 
     @Test
@@ -46,6 +57,7 @@ public class BookRepositoryTest {
         book.setIsbn("123456789");
         book.setGenreId(1L);
         bookRepository.save(book);
+
         assertEquals(6, bookRepository.findAll().size());
     }
 
@@ -57,6 +69,7 @@ public class BookRepositoryTest {
         book.setIsbn("1234567891");
         book.setGenreId(1L);
         Book savedBook = bookRepository.save(book);
+
         assertEquals("Test Title2", savedBook.getTitle());
     }
 
@@ -82,6 +95,7 @@ public class BookRepositoryTest {
         book.setTitle("Changed Title");
         bookRepository.save(book);
         book = bookRepository.findById(6L);
+
         assertEquals("Changed Title", book.getTitle());
         assertEquals(6, bookRepository.findAll().size());
         assertEquals(6L, book.getId());
@@ -91,6 +105,7 @@ public class BookRepositoryTest {
     @Order(7)
     void whenFindById8ThenAllBookDataAreNull() {
         Book book = bookRepository.findById(8L);
+
         assertNull(book.getGenreId());
         assertNull(book.getTitle());
         assertNull(book.getIsbn());
@@ -100,6 +115,7 @@ public class BookRepositoryTest {
     @Order(8)
     void whenIdIsNegativeThenBookDataAreNull() {
         Book book = bookRepository.findById(-1L);
+
         assertNull(book.getGenreId());
         assertNull(book.getTitle());
         assertNull(book.getIsbn());

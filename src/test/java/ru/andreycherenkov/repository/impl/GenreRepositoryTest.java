@@ -5,7 +5,13 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import ru.andreycherenkov.db.ConnectionManager;
+import ru.andreycherenkov.db.impl.ContainerConnectionManager;
 import ru.andreycherenkov.model.Genre;
+import ru.andreycherenkov.repository.mapper.BookMapper;
+import ru.andreycherenkov.repository.mapper.BookResultMapper;
+import ru.andreycherenkov.repository.mapper.GenreMapper;
+import ru.andreycherenkov.repository.mapper.GenreResultSetMapper;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -26,10 +32,20 @@ class GenreRepositoryTest {
             .withUsername("test")
             .withPassword("test");
 
-    private final GenreRepository genreRepository = new GenreRepository(
+    private final ConnectionManager connectionManager = new ContainerConnectionManager(
             mysqlContainer.getJdbcUrl(),
             mysqlContainer.getUsername(),
             mysqlContainer.getPassword()
+    );
+
+    private final GenreResultSetMapper genreResultSetMapper = new GenreMapper();
+    private final BookResultMapper bookResultMapper = new BookMapper();
+    private final BookRepository bookRepository = new BookRepository(connectionManager, bookResultMapper);
+
+    private final GenreRepository genreRepository = new GenreRepository(
+            connectionManager,
+            genreResultSetMapper,
+            bookRepository
     );
 
     @Test
@@ -45,6 +61,7 @@ class GenreRepositoryTest {
         Genre genre = new Genre();
         genre.setName("test");
         genreRepository.save(genre);
+
         assertEquals(6, genreRepository.findAll().size());
     }
 
@@ -54,6 +71,7 @@ class GenreRepositoryTest {
         Genre genre = new Genre();
         genre.setName("newgenre");
         Genre savedGenre = genreRepository.save(genre);
+
         assertEquals("newgenre", savedGenre.getName());
     }
 
@@ -68,6 +86,7 @@ class GenreRepositoryTest {
     @Order(5)
     void afterDeleteMethodFindAllReturn6Genres() {
         boolean bool = genreRepository.deleteById(1L);
+
         assertTrue(bool);
         assertEquals(6, genreRepository.findAll().size());
     }
@@ -79,6 +98,7 @@ class GenreRepositoryTest {
         genre.setName("changedname");
         genreRepository.save(genre);
         genre = genreRepository.findById(6L);
+
         assertEquals(6, genreRepository.findAll().size());
         assertEquals(6L, genre.getId());
         assertEquals("changedname", genre.getName());

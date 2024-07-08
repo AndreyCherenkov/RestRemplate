@@ -7,16 +7,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import ru.andreycherenkov.factory.AuthorClassesFactory;
 import ru.andreycherenkov.model.Author;
-import ru.andreycherenkov.repository.impl.AuthorRepository;
-import ru.andreycherenkov.repository.impl.BookRepository;
 import ru.andreycherenkov.service.AuthorService;
-import ru.andreycherenkov.service.impl.AuthorServiceImpl;
-import ru.andreycherenkov.service.impl.BookServiceImpl;
 import ru.andreycherenkov.servlet.dto.IncomingAuthorDto;
 import ru.andreycherenkov.servlet.dto.OutgoingAuthorDto;
 import ru.andreycherenkov.servlet.mapper.AuthorDtoMapper;
-import ru.andreycherenkov.servlet.mapper.AuthorDtoMapperImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,9 +23,15 @@ import java.util.Optional;
 @WebServlet(name = "AuthorServlet", value = "/author")
 public class AuthorServlet extends HttpServlet {
 
-    private transient AuthorService authorService = new AuthorServiceImpl(new AuthorRepository());
-    private final AuthorDtoMapper authorDtoMapper = new AuthorDtoMapperImpl(new BookServiceImpl(new BookRepository()));
-    private final ObjectMapper mapper = new ObjectMapper();
+    private AuthorService authorService;
+    private AuthorDtoMapper authorDtoMapper;
+    private ObjectMapper mapper;
+
+    public AuthorServlet() {
+        this.authorService = AuthorClassesFactory.getDefaultAuthorService();
+        this.authorDtoMapper = AuthorClassesFactory.getDefaultAuthorDtoMapper();
+        this.mapper = new ObjectMapper();
+    }
 
     private static void setJson(HttpServletResponse response) {
         response.setContentType("application/json");

@@ -28,7 +28,6 @@ class BookDtoMapperImplTest {
 
     @Test
     void testMapIncomingBookDto() {
-        // Given
         IncomingBookDto incomingBookDto = new IncomingBookDto(
                 "Book Title",
                 "1234567890",
@@ -45,10 +44,8 @@ class BookDtoMapperImplTest {
         when(authorService.findById(1L)).thenReturn(author1);
         when(authorService.findById(2L)).thenReturn(author2);
 
-        // When
         Book book = bookDtoMapper.map(incomingBookDto);
 
-        // Then
         assertEquals("Book Title", book.getTitle());
         assertEquals("1234567890", book.getIsbn());
         assertEquals(2023, book.getPublicationYear());
@@ -58,7 +55,6 @@ class BookDtoMapperImplTest {
 
     @Test
     void testMapBook() {
-        // Given
         Author author1 = new Author();
         author1.setId(1L);
         author1.setFirstName("Author 1");
@@ -75,10 +71,8 @@ class BookDtoMapperImplTest {
         book.setGenreId(1L);
         book.getAuthors().addAll(List.of(author1, author2));
 
-        // When
         OutgoingBookDto outgoingBookDto = bookDtoMapper.map(book);
 
-        // Then
         assertEquals(1L, outgoingBookDto.id());
         assertEquals("Book Title", outgoingBookDto.title());
         assertEquals("1234567890", outgoingBookDto.isbn());

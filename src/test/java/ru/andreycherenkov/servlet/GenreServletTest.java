@@ -50,32 +50,41 @@ class GenreServletTest {
     @Test
     void doGetAll() throws IOException {
         when(request.getParameter("id")).thenReturn("all");
+
         genreServlet.doGet(request, response);
+
         verify(genreService).findAll();
     }
 
     @Test
     void doGetNotFoundStatus() throws IOException {
         when(request.getParameter("id")).thenReturn(Integer.MAX_VALUE + "");
+
         genreServlet.doGet(request, response);
+
         verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
     }
 
     @Test
     void doGetInternalServerErrorStatus() throws IOException {
         when(request.getParameter("id")).thenReturn("error");
+
         genreServlet.doGet(request, response);
+
         verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
     @Test
     void doPost() throws IOException {
         String jsonRequest = "{\"name\":\"test\"}";
+
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
         genreServlet.doPost(request, response);
+
         ArgumentCaptor<Genre> argumentCaptor = ArgumentCaptor.forClass(Genre.class);
         verify(genreService).save(argumentCaptor.capture());
+
         IncomingGenreDto result = new IncomingGenreDto(argumentCaptor.getValue().getName());
         assertEquals("test", result.name());
     }
@@ -84,6 +93,7 @@ class GenreServletTest {
     void doDelete() throws IOException {
         when(request.getParameter("id")).thenReturn("1");
         genreServlet.doDelete(request, response);
+
         verify(genreService).deleteById(Mockito.anyLong());
         verify(response).setStatus(HttpServletResponse.SC_OK);
     }
@@ -92,21 +102,23 @@ class GenreServletTest {
     void doDeleteInternalServerErrorStatus() throws IOException {
         when(request.getParameter("id")).thenReturn("error");
         genreServlet.doDelete(request, response);
+
         verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
     @Test
     void doPut() throws IOException {
         String jsonRequest = "{\"name\":\"test\"}";
+
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
         genreServlet.doPut(request, response);
+
         ArgumentCaptor<Genre> argumentCaptor = ArgumentCaptor.forClass(Genre.class);
         verify(genreService).save(argumentCaptor.capture());
+
         IncomingGenreDto result = new IncomingGenreDto(argumentCaptor.getValue().getName());
         assertEquals("test", result.name());
 
     }
-
-
 }

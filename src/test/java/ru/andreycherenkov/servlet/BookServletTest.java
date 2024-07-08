@@ -47,43 +47,64 @@ public class BookServletTest {
     @Test
     void doGetById() throws IOException, ServletException {
         when(request.getParameter("id")).thenReturn("1");
+
         bookServlet.doGet(request, response);
+
         verify(bookService).findById(Mockito.anyLong());
     }
 
     @Test
     void doGetAll() throws IOException, ServletException {
         when(request.getParameter("id")).thenReturn("all");
+
         bookServlet.doGet(request, response);
+
         verify(bookService).findAll();
     }
 
     @Test
     void doGetNotFound() throws IOException, ServletException {
         when(request.getParameter("id")).thenReturn(Integer.MAX_VALUE + "");
+
         bookServlet.doGet(request, response);
+
         verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
     }
 
     @Test
     void doGetInternalServerError() throws IOException, ServletException {
         when(request.getParameter("id")).thenReturn("error");
+
         bookServlet.doGet(request, response);
+
         verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
     @Test
     void doPost() throws IOException, ServletException {
-        String title = "test title";
-        String isbn = "978-0-618-05326-7";
+        String title = "testTitle";
+        String isbn = "978-0-618-05326-75";
         int publicationYear = 1954;
-        Long genreId = 1L;
-        String jsonRequest = "{\"title\":\"" + title + "\",\"isbn\":\"" + isbn + "\",\"publicationYear\":" + publicationYear + ",\"genreId\":" + genreId + ",\"authorIds\":[1,2,3]}";
+        Long genreId = 11L;
+        String jsonRequest = "{\n" +
+                "  \"title\": \"" + title + "\",\n" +
+                "  \"isbn\": \"" + isbn + "\",\n" +
+                "  \"publicationYear\": " + publicationYear + ",\n" +
+                "  \"genreId\": " + genreId + ",\n" +
+                "  \"authorIds\": [\n" +
+                "    1,\n" +
+                "    2,\n" +
+                "    3\n" +
+                "  ]\n" +
+                "}\n";
+
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
         bookServlet.doPost(request, response);
+
         ArgumentCaptor<Book> argumentCaptor = ArgumentCaptor.forClass(Book.class);
         verify(bookService).save(argumentCaptor.capture());
+
         assertEquals(title, argumentCaptor.getValue().getTitle());
         assertEquals(isbn, argumentCaptor.getValue().getIsbn());
         assertEquals(publicationYear, argumentCaptor.getValue().getPublicationYear());
@@ -94,7 +115,9 @@ public class BookServletTest {
     @Test
     void doDelete() throws IOException, ServletException {
         when(request.getParameter("id")).thenReturn("1");
+
         bookServlet.doDelete(request, response);
+
         verify(bookService).deleteById(Mockito.anyLong());
         verify(response).setStatus(HttpServletResponse.SC_OK);
     }
@@ -102,7 +125,9 @@ public class BookServletTest {
     @Test
     void doDeleteInternalServerError() throws IOException, ServletException {
         when(request.getParameter("id")).thenReturn("error");
+
         bookServlet.doDelete(request, response);
+
         verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
@@ -112,12 +137,24 @@ public class BookServletTest {
         String isbn = "978-0-618-05326-7";
         int publicationYear = 1954;
         Long genreId = 1L;
-        String jsonRequest = "{\"title\":\"" + title + "\",\"isbn\":\"" + isbn + "\",\"publicationYear\":" + publicationYear + ",\"genreId\":" + genreId + ",\"authorIds\":[1,2,3]}";
+        String jsonRequest = "{\n" +
+                "  \"title\": \"" + title + "\",\n" +
+                "  \"isbn\": \"" + isbn + "\",\n" +
+                "  \"publicationYear\": " + publicationYear + ",\n" +
+                "  \"genreId\": " + genreId + ",\n" +
+                "  \"authorIds\": [\n" +
+                "    1,\n" +
+                "    2,\n" +
+                "    3\n" +
+                "  ]\n" +
+                "}\n";
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
         bookServlet.doPost(request, response);
+
         ArgumentCaptor<Book> argumentCaptor = ArgumentCaptor.forClass(Book.class);
         verify(bookService).save(argumentCaptor.capture());
+
         assertEquals(title, argumentCaptor.getValue().getTitle());
         assertEquals(isbn, argumentCaptor.getValue().getIsbn());
         assertEquals(publicationYear, argumentCaptor.getValue().getPublicationYear());
