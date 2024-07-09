@@ -71,7 +71,6 @@ public class GenreRepository implements CRUDRepository<Genre, Long> {
             Book book;
             while (resultSet.next()) {
                 book = bookRepository.findById(resultSet.getLong(BookStatement.BOOK_ID.getValue()));
-                System.out.println(book);
                 book.setGenreId(null);
                 bookRepository.save(book);
             }
