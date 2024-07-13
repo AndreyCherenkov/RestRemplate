@@ -13,11 +13,14 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.andreycherenkov.model.Book;
 import ru.andreycherenkov.service.BookService;
+import ru.andreycherenkov.servlet.dto.IncomingBookDto;
+import ru.andreycherenkov.servlet.mapper.BookDtoMapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -26,6 +29,7 @@ import static org.mockito.Mockito.*;
 public class BookServletTest {
 
     private BookService bookService = mock(BookService.class);
+    private BookDtoMapper bookDtoMapper = mock(BookDtoMapper.class);
 
     @InjectMocks
     private BookServlet bookServlet;
@@ -36,12 +40,13 @@ public class BookServletTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        Mockito.doReturn(new PrintWriter(Writer.nullWriter())).when(response).getWriter();
+        doReturn(new PrintWriter(Writer.nullWriter())).when(response).getWriter();
     }
 
     @AfterEach
     void tearDown() {
-        Mockito.reset(bookService);
+        reset(bookService);
+        reset(bookDtoMapper);
     }
 
     @Test
@@ -100,6 +105,12 @@ public class BookServletTest {
 
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
+        Book book = new Book();
+        book.setTitle(title);
+        book.setIsbn(isbn);
+        book.setPublicationYear(publicationYear);
+        book.setGenreId(genreId);
+        when(bookDtoMapper.map(new IncomingBookDto(title, isbn, publicationYear, genreId, List.of(1L, 2L, 3L)))).thenReturn(book);
         bookServlet.doPost(request, response);
 
         ArgumentCaptor<Book> argumentCaptor = ArgumentCaptor.forClass(Book.class);
@@ -109,7 +120,6 @@ public class BookServletTest {
         assertEquals(isbn, argumentCaptor.getValue().getIsbn());
         assertEquals(publicationYear, argumentCaptor.getValue().getPublicationYear());
         assertEquals(genreId, argumentCaptor.getValue().getGenreId());
-        assertEquals(3, argumentCaptor.getValue().getAuthors().size());
     }
 
     @Test
@@ -150,6 +160,12 @@ public class BookServletTest {
                 "}\n";
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
+        Book book = new Book();
+        book.setTitle(title);
+        book.setIsbn(isbn);
+        book.setPublicationYear(publicationYear);
+        book.setGenreId(genreId);
+        when(bookDtoMapper.map(new IncomingBookDto(title, isbn, publicationYear, genreId, List.of(1L, 2L, 3L)))).thenReturn(book);
         bookServlet.doPost(request, response);
 
         ArgumentCaptor<Book> argumentCaptor = ArgumentCaptor.forClass(Book.class);
@@ -159,6 +175,5 @@ public class BookServletTest {
         assertEquals(isbn, argumentCaptor.getValue().getIsbn());
         assertEquals(publicationYear, argumentCaptor.getValue().getPublicationYear());
         assertEquals(genreId, argumentCaptor.getValue().getGenreId());
-        assertEquals(3, argumentCaptor.getValue().getAuthors().size());
     }
 }

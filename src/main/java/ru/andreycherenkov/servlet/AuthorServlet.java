@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.andreycherenkov.factory.AuthorClassesFactory;
+import ru.andreycherenkov.factory.BookClassesFactory;
 import ru.andreycherenkov.model.Author;
 import ru.andreycherenkov.service.AuthorService;
 import ru.andreycherenkov.servlet.dto.IncomingAuthorDto;
@@ -18,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @WebServlet(name = "AuthorServlet", value = "/author")
@@ -34,9 +36,9 @@ public class AuthorServlet extends HttpServlet {
     }
 
     public AuthorServlet(AuthorService authorService, AuthorDtoMapper authorDtoMapper, ObjectMapper mapper) {
-        this.authorService = authorService;
-        this.authorDtoMapper = authorDtoMapper;
-        this.mapper = mapper;
+        this.authorService = Objects.requireNonNullElseGet(authorService, AuthorClassesFactory::getDefaultAuthorService);
+        this.authorDtoMapper = Objects.requireNonNullElseGet(authorDtoMapper, AuthorClassesFactory::getDefaultAuthorDtoMapper);
+        this.mapper = Objects.requireNonNullElseGet(mapper, ObjectMapper::new);
     }
 
     private static void setJson(HttpServletResponse response) {
