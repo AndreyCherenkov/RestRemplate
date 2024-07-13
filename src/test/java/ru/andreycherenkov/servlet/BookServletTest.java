@@ -166,8 +166,8 @@ public class BookServletTest {
         book.setPublicationYear(publicationYear);
         book.setGenreId(genreId);
         when(bookDtoMapper.map(new IncomingBookDto(title, isbn, publicationYear, genreId, List.of(1L, 2L, 3L)))).thenReturn(book);
-        bookServlet.doPost(request, response);
 
+        bookServlet.doPut(request, response);
         ArgumentCaptor<Book> argumentCaptor = ArgumentCaptor.forClass(Book.class);
         verify(bookService).save(argumentCaptor.capture());
 

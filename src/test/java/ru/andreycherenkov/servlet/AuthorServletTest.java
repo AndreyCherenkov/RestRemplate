@@ -13,11 +13,14 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.andreycherenkov.model.Author;
 import ru.andreycherenkov.service.AuthorService;
+import ru.andreycherenkov.servlet.dto.IncomingAuthorDto;
+import ru.andreycherenkov.servlet.mapper.AuthorDtoMapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -26,6 +29,7 @@ import static org.mockito.Mockito.*;
 class AuthorServletTest {
 
     private AuthorService authorService = mock(AuthorService.class);
+    private AuthorDtoMapper authorDtoMapper = mock(AuthorDtoMapper.class);
 
     @InjectMocks
     private AuthorServlet authorServlet;
@@ -80,6 +84,10 @@ class AuthorServletTest {
 
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
+        Author author = new Author();
+        author.setFirstName(firstname);
+        author.setLastName(lastname);
+        when(authorDtoMapper.map(new IncomingAuthorDto(firstname, lastname, List.of(1L, 2L, 3L)))).thenReturn(author);
 
         authorServlet.doPost(request, response);
         ArgumentCaptor<Author> argumentCaptor = ArgumentCaptor.forClass(Author.class);
@@ -87,7 +95,6 @@ class AuthorServletTest {
 
         assertEquals(firstname, argumentCaptor.getValue().getFirstName());
         assertEquals(lastname, argumentCaptor.getValue().getLastName());
-        assertEquals(3, argumentCaptor.getValue().getBooks().size());
     }
 
     @Test
@@ -117,13 +124,16 @@ class AuthorServletTest {
 
         when(request.getReader()).thenReturn(reader);
         when(reader.readLine()).thenReturn(jsonRequest, null);
-        authorServlet.doPut(request, response);
+        Author author = new Author();
+        author.setFirstName(firstname);
+        author.setLastName(lastname);
+        when(authorDtoMapper.map(new IncomingAuthorDto(firstname, lastname, List.of(1L, 2L, 3L)))).thenReturn(author);
 
+        authorServlet.doPut(request, response);
         ArgumentCaptor<Author> argumentCaptor = ArgumentCaptor.forClass(Author.class);
         verify(authorService).save(argumentCaptor.capture());
 
         assertEquals(firstname, argumentCaptor.getValue().getFirstName());
         assertEquals(lastname, argumentCaptor.getValue().getLastName());
-        assertEquals(3, argumentCaptor.getValue().getBooks().size());
     }
 }
