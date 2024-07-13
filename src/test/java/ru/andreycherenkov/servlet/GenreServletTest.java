@@ -25,7 +25,7 @@ class GenreServletTest {
 
     private GenreService genreService = mock(GenreService.class);
     @InjectMocks
-    private GenreServlet genreServlet = new GenreServlet();
+    private GenreServlet genreServlet;
     private HttpServletRequest request = mock(HttpServletRequest.class);
     private HttpServletResponse response = mock(HttpServletResponse.class);
     private BufferedReader reader = mock(BufferedReader.class);

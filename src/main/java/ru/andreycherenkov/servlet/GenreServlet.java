@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @WebServlet(name = "GenreServlet", value = "/genre")
@@ -31,6 +32,12 @@ public class GenreServlet extends HttpServlet {
         this.genreService = GenreClassesFactory.getDefaultGenreService();
         this.genreDtoMapper = new GenreDtoMapperImpl();
         this.mapper = new ObjectMapper();
+    }
+
+    public GenreServlet(GenreService genreService, GenreDtoMapper genreDtoMapper, ObjectMapper mapper) {
+        this.genreService = Objects.requireNonNullElseGet(genreService, GenreClassesFactory::getDefaultGenreService);
+        this.genreDtoMapper = Objects.requireNonNullElseGet(genreDtoMapper, GenreDtoMapperImpl::new);
+        this.mapper = Objects.requireNonNullElseGet(mapper, ObjectMapper::new);
     }
 
     private static void setJson(HttpServletResponse response) {

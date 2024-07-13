@@ -8,16 +8,20 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.andreycherenkov.factory.BookClassesFactory;
+import ru.andreycherenkov.factory.GenreClassesFactory;
 import ru.andreycherenkov.model.Book;
 import ru.andreycherenkov.service.BookService;
 import ru.andreycherenkov.servlet.dto.IncomingBookDto;
 import ru.andreycherenkov.servlet.dto.OutgoingBookDto;
 import ru.andreycherenkov.servlet.mapper.BookDtoMapper;
+import ru.andreycherenkov.servlet.mapper.BookDtoMapperImpl;
+import ru.andreycherenkov.servlet.mapper.GenreDtoMapperImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @WebServlet(name = "BookServlet", value = "/book")
@@ -31,6 +35,12 @@ public class BookServlet extends HttpServlet {
         this.bookService = BookClassesFactory.getDefaultBookService();
         this.bookDtoMapper = BookClassesFactory.getDefaultBookDtoMapper();
         this.mapper = new ObjectMapper();
+    }
+
+    public BookServlet(BookService bookService, ObjectMapper mapper, BookDtoMapper bookDtoMapper) {
+        this.bookService = Objects.requireNonNullElseGet(bookService, BookClassesFactory::getDefaultBookService);
+        this.bookDtoMapper = Objects.requireNonNullElseGet(bookDtoMapper, BookClassesFactory::getDefaultBookDtoMapper);
+        this.mapper = Objects.requireNonNullElseGet(mapper, ObjectMapper::new);
     }
 
     private static void setJson(HttpServletResponse response) {

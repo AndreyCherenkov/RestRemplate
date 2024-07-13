@@ -33,6 +33,12 @@ public class AuthorServlet extends HttpServlet {
         this.mapper = new ObjectMapper();
     }
 
+    public AuthorServlet(AuthorService authorService, AuthorDtoMapper authorDtoMapper, ObjectMapper mapper) {
+        this.authorService = authorService;
+        this.authorDtoMapper = authorDtoMapper;
+        this.mapper = mapper;
+    }
+
     private static void setJson(HttpServletResponse response) {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
